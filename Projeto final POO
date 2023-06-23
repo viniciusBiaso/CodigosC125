@@ -1,0 +1,68 @@
+//Codigo de interacao com o personagem
+
+using UnityEngine;
+
+public class CharacterController : MonoBehaviour
+{
+    public float moveSpeed = 5f;
+    public float jumpForce = 5f;
+    public Transform groundCheck;
+    public LayerMask groundLayer;
+    public Animator animator;
+
+    private Rigidbody2D rb;
+    private bool isGrounded;
+    private bool isFacingRight = true;
+
+    private int coinCount = 0;
+
+    private void Start()
+    {
+        rb = GetComponent<Rigidbody2D>();
+    }
+
+    private void Update()
+    {
+        // Verificar se o personagem está no chão
+        isGrounded = Physics2D.OverlapCircle(groundCheck.position, 0.2f, groundLayer);
+
+        // Controles de movimento horizontal
+        float moveX = Input.GetAxis("Horizontal");
+        rb.velocity = new Vector2(moveX * moveSpeed, rb.velocity.y);
+
+        // Atualizar animações
+        animator.SetFloat("Speed", Mathf.Abs(moveX));
+        animator.SetBool("IsGrounded", isGrounded);
+        animator.SetFloat("VerticalSpeed", rb.velocity.y);
+
+        // Verificar direção do movimento e virar o personagem
+        if (moveX > 0 && !isFacingRight)
+        {
+            Flip();
+        }
+        else if (moveX < 0 && isFacingRight)
+        {
+            Flip();
+        }
+
+        // Pular
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            rb.AddForce(new Vector2(0f, jumpForce), ForceMode2D.Impulse);
+        }
+    }
+
+    private void Flip()
+    {
+        isFacingRight = !isFacingRight;
+        Vector3 scale = transform.localScale;
+        scale.x *= -1;
+        transform.localScale = scale;
+    }
+
+    public void CollectCoin()
+    {
+        coinCount++;
+        Debug.Log("Coins collected: " + coinCount);
+    }
+}
